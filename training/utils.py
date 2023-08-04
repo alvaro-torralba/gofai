@@ -10,9 +10,10 @@ from lab.calls.call import Call
 import sys
 
 class SaveModel:
-    def __init__(self, knowledge_file, keep_copies=True):
+    def __init__(self, knowledge_file, keep_copies=True, ext=True):
         self.knowledge_file = knowledge_file
         self.keep_copies = 1 if keep_copies else 0
+        self.ext = ext
 
     def save(self, source_dirs):
         if not self.knowledge_file:
@@ -33,7 +34,7 @@ class SaveModel:
             knowledge_filename += f'.{self.keep_copies}'
             self.keep_copies += 1
 
-        shutil.move(self.knowledge_file + '.tmp', knowledge_filename)
+        shutil.move(self.knowledge_file + '.tmp', knowledge_filename + (".tgz" if self.ext else ""))
 
 
 def filter_training_set(REPO_LEARNING, TRAINING_SET, rules_file, output):

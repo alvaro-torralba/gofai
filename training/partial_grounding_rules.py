@@ -7,7 +7,18 @@ def is_non_zero_file(fpath):
 
 
 def run_step_partial_grounding_rules(REPO_LEARNING, RUNS_DIRS, WORKING_DIR, domain_file, time_limit=300,
-                                     memory_limit = 4*1024*1024):
+                                     memory_limit = 4*1024*1024,
+                                     feature_selection_methods = ["DT","LOGR", "SVR"],
+				     good_operator_filenames = [ 'sas_plan', 'good_operators'],
+                                     # TODO: consider here more learning methods, possibly parameterized
+				    learning_methods = [("DT", ["--model-type", "DT"]),
+     				                        ('LOGR', ["--model-type", "LOGR"]),
+                        				('LINR', ["--model-type", "LINR"]),
+							('RF', ["--model-type", "RF"]),
+							('SVR', ["--model-type", "SVR"]),
+                        				('KRN_RG', ["--model-type", "KRN_RG"]),
+                        				]
+	):
     #TODO: check time and memory limit (right now it's taken as a limit per step, and not a limit in total
 
     os.mkdir(f"{WORKING_DIR}")
@@ -53,7 +64,6 @@ def run_step_partial_grounding_rules(REPO_LEARNING, RUNS_DIRS, WORKING_DIR, doma
     # DT gives by far the best scores. The other models mostly give similar scores to very many
     # rules, so it's not clear if these scores say a lot about the relevance.
     # feature_selection_methods = ["DT", "RF", "LINR", "LOGR", "SVR"]
-    feature_selection_methods = ["DT","LOGR", "SVR"]
 
     for method in feature_selection_methods:
         Call([sys.executable, f'{REPO_LEARNING}/learning-sklearn/feature-selection.py', '--training-folder', f'{WORKING_DIR}/training-data-good-operators-exhaustive-filtered', '--selector-type', method], "feature-selection", time_limit=time_limit, memory_limit=memory_limit).wait()
@@ -62,7 +72,7 @@ def run_step_partial_grounding_rules(REPO_LEARNING, RUNS_DIRS, WORKING_DIR, doma
     useful_rules_files = [f for f in os.listdir(f'{WORKING_DIR}/training-data-good-operators-exhaustive-filtered') if f.startswith('useful_rules')]
     for useful_rules_file in useful_rules_files:
         for RUNS_DIR in RUNS_DIRS:
-            for op_file in ['sas_plan', 'good_operators']:
+            for op_file in good_operator_filenames:
                 if RUNS_DIR.endswith('combined') and op_file == 'sas_plan':
                     continue # Skip this combination which does not make sense
 
@@ -77,14 +87,6 @@ def run_step_partial_grounding_rules(REPO_LEARNING, RUNS_DIRS, WORKING_DIR, doma
 
     training_data_directories = [f for f in os.listdir( f'{WORKING_DIR}/') if f.startswith('training-data')]
 
-    # TODO: consider here more learning methods, possibly parameterized
-    learning_methods = [("DT", ["--model-type", "DT"]),
-                        ('LOGR', ["--model-type", "LOGR"]),
-                        ('LINR', ["--model-type", "LINR"]),
-                        ('RF', ["--model-type", "RF"]),
-                        ('SVR', ["--model-type", "SVR"]),
-                        ('KRN_RG', ["--model-type", "KRN_RG"]),
-                        ]
     for training_data_dir in training_data_directories:
         for learning_method_name, learning_method_parameters in learning_methods:
 
