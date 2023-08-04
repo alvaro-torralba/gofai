@@ -123,23 +123,28 @@ def main():
 
     instances_manager = InstanceSet(f'{TRAINING_DIR}/runs-lama')
 
-    # We run the good operators tool only on instances solved by lama in less than 30 seconds
-    instances_to_run_good_operators = instances_manager.select_instances([lambda i, p : p['search_time'] < 30])
 
-    SUITE_GOOD_OPERATORS = suites.build_suite(TRAINING_DIR, [f'instances:{name}.pddl' for name in instances_to_run_good_operators])
-    if not os.path.exists(f'{TRAINING_DIR}/good-operators-unit'):
-        logging.info("Running good operators with unit cost on %d traning instances (remaining time %s)", len(instances_to_run_good_operators), timer)
-        RUN.run_good_operators(f'{TRAINING_DIR}/good-operators-unit', REPO_GOOD_OPERATORS, ['--search', "sbd(store_operators_in_optimal_plan=true, cost_type=1)"], ENV, SUITE_GOOD_OPERATORS)
+    if args.training_data:
+        instances_manager.add_training_data(args.training_data)
     else:
-        assert args.resume
-    instances_manager.add_training_data(f'{TRAINING_DIR}/good-operators-unit')
+        # We run the good operators tool only on instances solved by lama in less than 30 seconds
+        instances_to_run_good_operators = instances_manager.select_instances([lambda i, p : p['search_time'] < 30])
 
-    TRAINING_SET = f'{TRAINING_DIR}/good-operators-unit'
+        SUITE_GOOD_OPERATORS = suites.build_suite(TRAINING_DIR, [f'instances:{name}.pddl' for name in instances_to_run_good_operators])
+        if not os.path.exists(f'{TRAINING_DIR}/good-operators-unit'):
+            logging.info("Running good operators with unit cost on %d traning instances (remaining time %s)", len(instances_to_run_good_operators), timer)
+            RUN.run_good_operators(f'{TRAINING_DIR}/good-operators-unit', REPO_GOOD_OPERATORS, ['--search', "sbd(store_operators_in_optimal_plan=true, cost_type=1)"], ENV, SUITE_GOOD_OPERATORS)
+        else:
+            assert args.resume
+        instances_manager.add_training_data(f'{TRAINING_DIR}/good-operators-unit')
+
 
     ####
     # Training of priority partial grounding models
     ####
     ####
+    # TRAINING_SET = f'{TRAINING_DIR}/good-operators-unit'
+
     # aleph_experiment = AlephExperiment(REPO_LEARNING, args.domain, time_limit=TIME_LIMITS_SEC ['train-hard-rules'], memory_limit=MEMORY_LIMITS_MB ['train-hard-rules'])
     # if not os.path.exists(f'{TRAINING_DIR}/partial-grounding-aleph'):
     #     logging.info("Learning Aleph probability model (remaining time %s)", timer)
