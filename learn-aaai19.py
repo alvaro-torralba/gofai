@@ -29,19 +29,13 @@ from downward import suites
 
 # All time limits are in seconds
 TIME_LIMITS_SEC = {
-    'run_experiment' : 60, # One minute
-    'train-hard-rules' : 120, # time per schema
-    'smac-optimization-hard-rules' : 300,
-    'smac-partial-grounding-total' : 900,
-    'smac-partial-grounding-run' : 60,
-    'smac-partial-grounding-run-search' : 120,
-    'sklearn-step' : 600,
+    'run_experiment' : 1800, # 30 minutes
+    'sklearn-step' : 1800,
 }
 
 # Memory limits are in MB
 MEMORY_LIMITS_MB = {
-    'run_experiment' : 1024*4,
-    'train-hard-rules' : 1024*4
+    'run_experiment' : 1024*4
 }
 
 
