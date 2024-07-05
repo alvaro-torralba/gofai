@@ -58,7 +58,8 @@ def num_instances_from_properties(instances_with_properties, f):
 class InstanceSet:
 
     def __init__(self, runs_lama):
-        self.instances_with_properties = select_instances_from_runs_with_properties(runs_lama)
+        if runs_lama: 
+            self.instances_with_properties = select_instances_from_runs_with_properties(runs_lama)
         self.training_data_run_dirs = []
 
         if self.num_instances([not_solved]) == 0:

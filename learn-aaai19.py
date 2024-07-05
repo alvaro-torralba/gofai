@@ -22,7 +22,7 @@ from timer import CountdownWCTimer
 
 from partial_grounding_rules import run_step_partial_grounding_rules
 from optimize_smac import run_smac_partial_grounding, run_smac_bad_rules, run_smac_search
-from instance_set import InstanceSet, select_instances_from_runs,select_instances_from_runs_with_properties
+from instance_set import InstanceSet, select_instances_from_runs
 from utils import SaveModel, filter_training_set, combine_training_sets
 
 from downward import suites
@@ -104,23 +104,22 @@ def main():
 
     RUN = RunExperiment (TIME_LIMITS_SEC ['run_experiment'], MEMORY_LIMITS_MB['run_experiment'])
 
-    ###
-    # Run lama and symbolic search to gather all training data
-    ###
-    if not os.path.exists(f'{TRAINING_DIR}/runs-lama'):
-        logging.info("Running LAMA on all traning instances (remaining time %s)", timer)
-        # Run lama, with empty config and using the alias
-        RUN.run_planner(f'{TRAINING_DIR}/runs-lama', REPO_PARTIAL_GROUNDING, [], ENV, SUITE_ALL, driver_options = ["--alias", "lama-first",
-                                                                                                                   "--transform-task", f"{REPO_PARTIAL_GROUNDING}/builds/release/bin/preprocess-h2",                                                                                                                   "--transform-task-options", f"h2_time_limit,300"])
-    else:
-        assert args.resume
-
-    instances_manager = InstanceSet(f'{TRAINING_DIR}/runs-lama')
-
 
     if args.training_data:
+        instances_manager = InstanceSet(args.training_data)
         instances_manager.add_training_data(args.training_data)
     else:
+        ###
+        # Run lama and symbolic search to gather all training data
+        ###
+        if not os.path.exists(f'{TRAINING_DIR}/runs-lama'):
+            logging.info("Running LAMA on all traning instances (remaining time %s)", timer)
+            # Run lama, with empty config and using the alias
+            RUN.run_planner(f'{TRAINING_DIR}/runs-lama', REPO_PARTIAL_GROUNDING, [], ENV, SUITE_ALL, driver_options = ["--alias", "lama-first",
+                                                                                                                       "--transform-task", f"{REPO_PARTIAL_GROUNDING}/builds/release/bin/preprocess-h2",                                                                                                                   "--transform-task-options", f"h2_time_limit,300"])
+        else:
+            assert args.resume
+
         # We run the good operators tool only on instances solved by lama in less than 30 seconds
         instances_to_run_good_operators = instances_manager.select_instances([lambda i, p : p['search_time'] < 30])
 
@@ -130,6 +129,9 @@ def main():
             RUN.run_good_operators(f'{TRAINING_DIR}/good-operators-unit', REPO_GOOD_OPERATORS, ['--search', "sbd(store_operators_in_optimal_plan=true, cost_type=1)"], ENV, SUITE_GOOD_OPERATORS)
         else:
             assert args.resume
+
+        instances_manager = InstanceSet(f'{TRAINING_DIR}/runs-lama')
+
         instances_manager.add_training_data(f'{TRAINING_DIR}/good-operators-unit')
 
 
