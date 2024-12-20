@@ -73,7 +73,7 @@ def run_step_partial_grounding_rules(REPO_LEARNING, RUNS_DIRS, WORKING_DIR, doma
     for useful_rules_file in useful_rules_files:
         for RUNS_DIR in RUNS_DIRS:
             for op_file in good_operator_filenames:
-                if RUNS_DIR.endswith('combined') and op_file == 'sas_plan':
+                if str(RUNS_DIR).endswith('combined') and op_file == 'sas_plan':
                     continue # Skip this combination which does not make sense
 
                 Call([sys.executable, f'{REPO_LEARNING}/learning-sklearn/generate-training-data.py', \

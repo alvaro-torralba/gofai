@@ -27,6 +27,8 @@ from utils import SaveModel, filter_training_set, combine_training_sets
 
 from downward import suites
 
+#from evaluate_model import evaluate_model
+
 # All time limits are in seconds
 TIME_LIMITS_SEC = {
     'run_experiment' : 1800, # 30 minutes
@@ -178,6 +180,10 @@ def main():
 
         save_model.save([ os.path.join(TRAINING_DIR, model)])
 
+
+
+    #for model in sk_models:
+        # evaluate_model(model, args.training_data)
 
 
 
